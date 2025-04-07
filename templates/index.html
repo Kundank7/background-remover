@@ -59,13 +59,20 @@
                 img.src = url;
                 img.style.maxWidth = "100%";
 
-                // Clear interval and show result
+                // Show result image
                 clearInterval(interval);
                 progressBar.value = 100;
                 resultDiv.appendChild(img);
+
+                // Trigger automatic download
+                const downloadLink = document.createElement('a');
+                downloadLink.href = url;
+                downloadLink.download = 'background_removed.png';
+                downloadLink.click();
+
             } catch (error) {
                 clearInterval(interval);
-                alert(error.message);
+                alert("Error: " + error.message);
             }
         };
     </script>

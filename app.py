@@ -24,7 +24,6 @@ def remove_bg():
     img_byte_arr.seek(0)
 
     return send_file(img_byte_arr, mimetype='image/png')
-
 if __name__ == '__main__':
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get('PORT', 5000))  # Use Render-assigned port
     app.run(host='0.0.0.0', port=port)

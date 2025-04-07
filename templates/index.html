@@ -1,80 +1,142 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Background Remover</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Background Remover</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f4f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: #fff;
+      padding: 30px 40px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      text-align: center;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    h1 {
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    input[type="file"] {
+      padding: 10px;
+      width: 100%;
+      margin-bottom: 15px;
+    }
+
+    button {
+      background-color: #4f46e5;
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #3730a3;
+    }
+
+    progress {
+      width: 100%;
+      height: 20px;
+      margin-top: 20px;
+    }
+
+    img {
+      margin-top: 20px;
+      max-width: 100%;
+      border-radius: 12px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .loader-text {
+      margin-top: 10px;
+      font-weight: 500;
+      color: #555;
+    }
+  </style>
 </head>
 <body>
-    <h1>Background Remover</h1>
-    <form enctype="multipart/form-data">
-        <input type="file" name="image" accept="image/*" required>
-        <button type="submit">Remove Background</button>
+  <div class="container">
+    <h1>Remove Image Background</h1>
+    <form id="upload-form" enctype="multipart/form-data">
+      <input type="file" name="image" accept="image/*" required />
+      <button type="submit">Remove Background</button>
     </form>
 
-    <!-- Progress Bar -->
-    <div id="progress-container" style="display:none; margin-top: 20px;">
-        <label>Removing background...</label>
-        <progress id="progress-bar" value="0" max="100" style="width: 100%;"></progress>
+    <div id="progress-container" style="display:none;">
+      <progress id="progress-bar" value="0" max="100"></progress>
+      <div class="loader-text">Processing...</div>
     </div>
 
-    <!-- Result -->
-    <div id="result" style="margin-top: 20px;"></div>
+    <div id="result"></div>
+  </div>
 
-    <script>
-        document.querySelector('form').onsubmit = async function(event) {
-            event.preventDefault();
-            const formData = new FormData(this);
+  <script>
+    const form = document.getElementById('upload-form');
+    const progressBar = document.getElementById('progress-bar');
+    const progressContainer = document.getElementById('progress-container');
+    const resultDiv = document.getElementById('result');
 
-            const progressBar = document.getElementById("progress-bar");
-            const progressContainer = document.getElementById("progress-container");
-            const resultDiv = document.getElementById("result");
+    form.onsubmit = async (event) => {
+      event.preventDefault();
+      const formData = new FormData(form);
 
-            // Reset progress
-            progressBar.value = 0;
-            progressContainer.style.display = 'block';
-            resultDiv.innerHTML = '';
+      progressBar.value = 0;
+      progressContainer.style.display = 'block';
+      resultDiv.innerHTML = '';
 
-            // Simulate progress bar
-            let simulatedProgress = 0;
-            const interval = setInterval(() => {
-                if (simulatedProgress < 95) {
-                    simulatedProgress += Math.floor(Math.random() * 5) + 1;
-                    progressBar.value = simulatedProgress;
-                }
-            }, 200);
+      let fakeProgress = 0;
+      const interval = setInterval(() => {
+        if (fakeProgress < 95) {
+          fakeProgress += Math.floor(Math.random() * 5);
+          progressBar.value = fakeProgress;
+        }
+      }, 200);
 
-            try {
-                const response = await fetch('/remove-bg', {
-                    method: 'POST',
-                    body: formData
-                });
+      try {
+        const response = await fetch('/remove-bg', {
+          method: 'POST',
+          body: formData,
+        });
 
-                if (!response.ok) {
-                    throw new Error("Something went wrong!");
-                }
+        if (!response.ok) throw new Error("Something went wrong!");
 
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-                const img = document.createElement('img');
-                img.src = url;
-                img.style.maxWidth = "100%";
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
 
-                // Show result image
-                clearInterval(interval);
-                progressBar.value = 100;
-                resultDiv.appendChild(img);
+        clearInterval(interval);
+        progressBar.value = 100;
 
-                // Trigger automatic download
-                const downloadLink = document.createElement('a');
-                downloadLink.href = url;
-                downloadLink.download = 'background_removed.png';
-                downloadLink.click();
+        const img = document.createElement('img');
+        img.src = url;
+        resultDiv.appendChild(img);
 
-            } catch (error) {
-                clearInterval(interval);
-                alert("Error: " + error.message);
-            }
-        };
-    </script>
+        // Auto download
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.download = 'background_removed.png';
+        downloadLink.click();
+      } catch (err) {
+        clearInterval(interval);
+        alert("Error: " + err.message);
+      }
+    };
+  </script>
 </body>
 </html>
